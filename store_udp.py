@@ -18,8 +18,9 @@ ACK_ = '00'
 Spare_ = '00'
 AppVersion_ = '000000'
 
+msgFromClient       = AckMessage
 bytesToSend         = str.encode(msgFromClient)
-serverAddressPort   = ("45.33.43.79", 5000)
+serverAddressPort   = ("23.239.5.206", 5000)
 bufferSize          = 2048
 
 app = Flask(__name__)
@@ -59,136 +60,130 @@ while(True):
     clientIP  = "Client IP Address:{}".format(address)
     clientPort = "Client Port Address:{}".format(port_addr)
 
-OptionsByte = message[0:2]
-#print "OptionsByte:", OptionsByte 
+    OptionsByte = message[0:2]
+    #print "OptionsByte:", OptionsByte 
 
-MobileIDLength = message[2:4]
-#print "MobileIDLength:", MobileIDLength
+    MobileIDLength = message[2:4]
+    #print "MobileIDLength:", MobileIDLength
 
-MobileID = message[4:14]
-#print "MobileID:", MobileID
+    MobileID = message[4:14]
+    #print "MobileID:", MobileID
 
-MobileIDLen = message[14:16]
-#print "MobileIDLen:", MobileIDLen
+    MobileIDLen = message[14:16]
+    #print "MobileIDLen:", MobileIDLen
 
-MobileIDType = message[16:18]
-#print "MobileIDType:", MobileIDType
+    MobileIDType = message[16:18]
+    #print "MobileIDType:", MobileIDType
 
-Service_Type = message[18:20]
-#print "Service Type:", Service_Type
+    #Service_Type = message[18:20]
+    #print "Service Type:", Service_Type
 
-Message_Type = message[20:22]
-#print "Message Type:", Message_Type
+    #Message_Type = message[20:22]
+    #print "Message Type:", Message_Type
 
-Sequence = message[22:26]
-#print "Sequence#:", Sequence
+    Sequence = message[22:26]
+    #print "Sequence#:", Sequence
 
-Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
-print "Update Time:", Update_Time
+    Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
+    print "Update Time:", Update_Time
 
-TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%d-%m-%Y %H:%M:%S'))
-print "TimeOfFix:", TimeOfFix
+    TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%d-%m-%Y %H:%M:%S'))
+    print "TimeOfFix:", TimeOfFix
 
-Lat = message[42:50]
-if  int(Lat[0:1],16) > 7:
-    print "Latitude:", round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
-else:
-    print "Latitude:", round((0.0000001*(bit_not(int(Lat,16)))),7)
+    Lat = message[42:50]
+    if  int(Lat[0:1],16) > 7:
+        Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
+        print "Latitude:", Latitude
+    else:
+        Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
+        print "Latitude:", Latitude
 
-Long = message[50:58]
+    Long = message[50:58]
+    if  int(Long[0:1],16) > 7:
+        Longitude = round((-0.0000001*(bit_not(int(Long,16))+1)),7)
+        print "Longitude:", Longitude
+    else:
+        Longitude = round((0.0000001*(bit_not(int(Long,16)))),7)
+        print "Longitude:", Longitude
 
-if  int(Long[0:1],16) > 7:
-    print "Longitude:", round((-0.0000001*(bit_not(int(Long,16))+1)),7)
-else:
-    print "Longitude:", round((0.0000001*(bit_not(int(Long,16)))),7)
+    #Altitude = message[58:66]
+    #print "Altitude:", Altitude
 
-Altitude = message[58:66]
-#print "Altitude:", Altitude
+    #Speed = message[66:74]
+    #print "Speed:", Speed
 
-Speed = message[66:74]
-#print "Speed:", Speed
+    #Heading = message[74:78]
+    #print "Heading:", Heading
 
-Heading = message[74:78]
-#print "Heading:", Heading
+    #Satellites = message[78:80]
+    #print "Satellites:", Satellites
 
-Satellites = message[78:80]
-#print "Satellites:", Satellites
+    #FixStatus = message[80:82]
+    #print "FixStatus:", FixStatus
 
-FixStatus = message[80:82]
-#print "FixStatus:", FixStatus
+    #Carrier = message[82:86]
+    #print "Carrier:", Carrier
 
-Carrier = message[82:86]
-#print "Carrier:", Carrier
+    #RSSI = message[86:90]
+    #print "RSSI:", RSSI
 
-RSSI = message[86:90]
-#print "RSSI:", RSSI
+    #CommState = message[90:92]
+    #print "CommState:", CommState
 
-CommState = message[90:92]
-#print "CommState:", CommState
+    #HDOP = message[92:94]
+    #print "HDOP:", HDOP
 
-HDOP = message[92:94]
-#print "HDOP:", HDOP
+    #Inputs = message[94:96]
+    #print "Inputs:", Inputs
 
-Inputs = message[94:96]
-#print "Inputs:", Inputs
+    #UnitStatus = message[96:98]
+    #print "UnitStatus:", UnitStatus
 
-UnitStatus = message[96:98]
-#print "UnitStatus:", UnitStatus
+    #User_Msg_Route = message[98:100]
+    #print "User Msg Route:", User_Msg_Route
 
-User_Msg_Route = message[98:100]
-#print "User Msg Route:", User_Msg_Route
+    #User_Msg_Id = message[100:102]
+    #print "User Msg Id:", User_Msg_Id
 
-User_Msg_Id = message[100:102]
-#print "User Msg Id:", User_Msg_Id
+    #User_Msg_Length = message[102:106]
+    #print "User Msg Length:", User_Msg_Length
 
-User_Msg_Length = message[102:106]
-#print "User Msg Length:", User_Msg_Length
+    User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
+    #print "User Msg:", User_Msg
 
-User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
-#print "User Msg:", User_Msg
+    AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
 
-AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
+    data = User_Msg[1:(len(User_Msg) - 1)]
 
-data = User_Msg[1:(len(User_Msg) - 1)]
+    items = data.split(";")
+    # this map stores the information that will be inserted into a data table
+    myList = []
+    mac = items[2]
+    mac = mac[1:len(mac)-2]
+    humidity = items[3]
+    humidity2 = items[4]
+    temperature = items[5]
+    temperature2 = items[6]
+    ammonia = items[7]
+    ammonia2 = items[8]
+    speed = items[9]
+    co2 = items[10]
+    battery = items[11]
 
-items = data.split(";")
-# this map stores the information that will be inserted into a data table
-myList = []
-mac = items[2]
-mac = mac[1:len(mac)-2]
-humidity = items[3]
-humidity2 = items[4]
-temperature = items[5]
-temperature2 = items[6]
-ammonia = items[7]
-ammonia2 = items[8]
-speed = items[9]
-co2 = items[10]
-battery = items[11]
-
-		# creating sql insert sentence
-		insertSQL = "insert into data"
-		insertFields = "created, mac, humidity, temperature, ammonia"
-		insertValuePH = "%s, %s, %s, %s, %s"
-		sqlValues = [dateTime, mac, humidity, temperature, ammonia]
-		insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-		connection = mysql.get_db()
-		cursor = connection.cursor()
-		cursor.execute(insertSQL,tuple(sqlValues))
-		connection.commit()
-        	return 'OK'
-	logger.error('Incorrect data format: ' + data)
-    except:
-	if connection is not None:
-	    connection.rollback()
-	logger.error('An error occurred: ' + traceback.format_exc())
-	return "ERROR"
-    return "Invalid data format."
-
-
-# Send to server using created UDP socket
-UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-msgFromServer = UDPClientSocket.recvfrom(bufferSize)
+	# creating sql insert sentence
+    insertSQL = "insert into data"
+	insertFields = "created, ,latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
+	insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+	sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
+	insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
+	connection = mysql.get_db()
+	cursor = connection.cursor()
+	cursor.execute(insertSQL,tuple(sqlValues))
+	connection.commit()
+       	return 'OK'
+	
+    # Send to server using created UDP socket
+    UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
 
 def setupLogger():
