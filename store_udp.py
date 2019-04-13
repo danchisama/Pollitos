@@ -18,10 +18,10 @@ ACK_ = '00'
 Spare_ = '00'
 AppVersion_ = '000000'
 
-msgFromClient       = AckMessage
-bytesToSend         = str.encode(msgFromClient)
-serverAddressPort   = ("23.239.5.206", 5000)
-bufferSize          = 2048
+msgFromClient = AckMessage
+bytesToSend = str.encode(msgFromClient)
+serverAddressPort = ("23.239.5.206", 5000)
+bufferSize = 2048
 
 app = Flask(__name__)
 app.config['MYSQL_DATABASE_USER'] = 'root'
@@ -54,7 +54,7 @@ while(True):
 
     message = bytesAddressPair[0]
     address = bytesAddressPair[1]
-    port_addr = bytesAddressPair[2]  
+    port_addr = bytesAddressPair[2]
 
     clientMsg = "Message from Client:{}".format(message)
     clientIP  = "Client IP Address:{}".format(address)
@@ -170,18 +170,18 @@ while(True):
     co2 = items[10]
     battery = items[11]
 
-	# creating sql insert sentence
+    # creating sql insert sentence
     insertSQL = "insert into data"
-	insertFields = "created, ,latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
-	insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
-	sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
-	insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-	connection = mysql.get_db()
-	cursor = connection.cursor()
-	cursor.execute(insertSQL,tuple(sqlValues))
-	connection.commit()
-       	return 'OK'
-	
+    insertFields = "created, ,latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
+    insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+    sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
+    insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
+    connection = mysql.get_db()
+    cursor = connection.cursor()
+    cursor.execute(insertSQL,tuple(sqlValues))
+    connection.commit()
+
+
     # Send to server using created UDP socket
     UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
@@ -190,7 +190,7 @@ def setupLogger():
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
     global logger
-    
+
 
 if __name__ == "__main__":
     setupLogger()
