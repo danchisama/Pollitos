@@ -100,7 +100,7 @@ while(True):
     #print "Update Time:", Update_Time
 
     TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%d-%m-%Y %H:%M:%S'))
-    #print "TimeOfFix:", TimeOfFix
+    print "TimeOfFix:", TimeOfFix
 
     Lat = message[42:50]
     if  int(Lat[0:1],16) > 7:
@@ -206,15 +206,10 @@ while(True):
 
     # creating sql insert sentence
     insertSQL = "insert into data"
-    insertFields = "created, ,latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
+    insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
     insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
     sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
     insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-
-    #connection = mysql.connect()
-    #cursor = connection.cursor()
-    #cursor.execute(insertSQL,tuple(sqlValues))
-    #connection.commit()
 
     msgFromClient = AckMessage
     print "AckMessage: ", AckMessage
@@ -228,7 +223,10 @@ while(True):
     UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
 
-
+    connection = mysql.connect()
+    cursor = connection.cursor()
+    cursor.execute(insertSQL,tuple(sqlValues))
+    connection.commit()
 
 
 def setupLogger():
