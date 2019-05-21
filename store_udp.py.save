@@ -3,30 +3,29 @@ import sys
 import logging
 import time
 import traceback
-import datetime
-import binascii
 from logging.handlers import TimedRotatingFileHandler
 from flask import Flask
 from flask import request
 from flaskext.mysql import MySQL
+from datetime import datetime
 import socket
 
 # Constant LMU ACK
 Service_Type = '02'
 Message_Type = '01'
-Type_ = '02'
+Type_ = '01'
 ACK_ = '00'
 Spare_ = '00'
-AppVersion_ = '0000'
+AppVersion_ = '000000'
 
-
-clienteIP = '23.239.5.206'
-clientPort = '5000'
-bufferSize = 2048
+msgFromClient       = AckMessage
+bytesToSend         = str.encode(msgFromClient)
+serverAddressPort   = ("23.239.5.206", 5000)
+bufferSize          = 2048
 
 app = Flask(__name__)
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'dataP4ssw0rd@2016*-'
+app.config['MYSQL_DATABASE_PASSWORD'] = ''
 app.config['MYSQL_DATABASE_DB'] = 'data'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 
@@ -46,29 +45,18 @@ def start():
 # Create a datagram socket
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 # Bind to address and ip
-UDPServerSocket.bind(("23.239.5.206",5000))
+UDPServerSocket.bind((localIP, localPort))
 print("UDP server up and listening")
-
-UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Listen for incoming datagrams
 while(True):
     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
 
-    #print "bytesAddressPair", bytesAddressPair
+    message = bytesAddressPair[0]
+    address = bytesAddressPair[1]
+    port_addr = bytesAddressPair[2]  
 
-    message1 = bytesAddressPair[0]
-    #print "Message1: ", message1
-
-    addr_port = bytesAddressPair[1]
-    address = addr_port[0]
-    port_addr = addr_port[1]
-
-    message = binascii.hexlify(message1)
-    #print "Message: ", message
-
-    clientMsg = "Message from Client:{}".format(message)
-    clientIP  = "Client IP Address:{}".format(address)
+    clientMsg = "Message from Client:{}".format(message)    clientIP  = "Client IP Address:{}".format(address)
     clientPort = "Client Port Address:{}".format(port_addr)
 
     OptionsByte = message[0:2]
@@ -94,29 +82,28 @@ while(True):
 
     Sequence = message[22:26]
     #print "Sequence#:", Sequence
-    #Sequence = '0001'
 
     Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
-    #print "Update Time:", Update_Time
+    print "Update Time:", Update_Time
 
-    TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%Y-%m-%d %H:%M:%S'))
+    TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%d-%m-%Y %H:%M:%S'))
     print "TimeOfFix:", TimeOfFix
 
     Lat = message[42:50]
     if  int(Lat[0:1],16) > 7:
         Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
-        #print "Latitude:", Latitude
+        print "Latitude:", Latitude
     else:
         Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
-        #print "Latitude:", Latitude
+        print "Latitude:", Latitude
 
     Long = message[50:58]
     if  int(Long[0:1],16) > 7:
         Longitude = round((-0.0000001*(bit_not(int(Long,16))+1)),7)
-        #print "Longitude:", Longitude
+        print "Longitude:", Longitude
     else:
         Longitude = round((0.0000001*(bit_not(int(Long,16)))),7)
-        #print "Longitude:", Longitude
+        print "Longitude:", Longitude
 
     #Altitude = message[58:66]
     #print "Altitude:", Altitude
@@ -160,73 +147,42 @@ while(True):
     #User_Msg_Length = message[102:106]
     #print "User Msg Length:", User_Msg_Length
 
-    #print "Message: ", message[106:((2*(int(message[102:106],16)))+106-2)]
-
     User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
-    print "User Msg:", User_Msg
+    #print "User Msg:", User_Msg
 
     AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
 
     data = User_Msg[1:(len(User_Msg) - 1)]
 
     items = data.split(";")
-
     # this map stores the information that will be inserted into a data table
     myList = []
-    mac = items[0]
-    mac = mac[1:len(mac)]
-    print "MAC: ", mac
-
-    humidity = items[1]
-    #print "Humidity: ", humidity
-
-    humidity2 = items[2]
-    #print "Humidity2: ", humidity2
-
-    temperature = items[3]
-    #print "Temperature: ", temperature
-
-    temperature2 = items[4]
-    #print "Temperature2: ", temperature2
-
-    ammonia = items[5]
-    #print "Ammonia: ", ammonia
-
-    ammonia2 = items[6]
-    #print "Ammonia2: ", ammonia2
-
-    speed = items[7]
-    #print "Speed: ", speed
-
-    co2 = items[8]
-    #print "CO2: ", co2
-
-    battery = items[9]
-    #print "Battery: ", battery
+    mac = items[2]
+    mac = mac[1:len(mac)-2]
+    humidity = items[3]
+    humidity2 = items[4]
+    temperature = items[5]
+    temperature2 = items[6]
+    ammonia = items[7]
+    ammonia2 = items[8]
+    speed = items[9]
+    co2 = items[10]
+    battery = items[11]
 
     # creating sql insert sentence
     insertSQL = "insert into data"
-    insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
+    insertFields = "created, ,latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
     insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
     sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
     insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-
-    msgFromClient = AckMessage
-    #print "AckMessage: ", AckMessage
-
-    bytesToSend = binascii.unhexlify(msgFromClient)
-    #print "bytesToSend: ", bytesToSend
-
-    serverAddressPort = (address, port_addr)
-
-    # Send to server using created UDP socket
-    UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-
-
-    connection = mysql.connect()
+    connection = mysql.get_db()
     cursor = connection.cursor()
     cursor.execute(insertSQL,tuple(sqlValues))
     connection.commit()
+
+
+    # Send to server using created UDP socket
+    UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
 
 def setupLogger():
