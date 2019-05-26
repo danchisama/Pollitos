@@ -101,7 +101,7 @@ while(True):
             Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
         else:
             Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
-   exception:
+   except:
         print "Error Lat"
    
 
@@ -111,7 +111,7 @@ while(True):
             Longitude = round((-0.0000001*(bit_not(int(Long,16))+1)),7)
         else:
             Longitude = round((0.0000001*(bit_not(int(Long,16)))),7)
-    exception:
+    except:
         print "Error Long"
         
         #Altitude = message[58:66]
@@ -131,20 +131,20 @@ while(True):
     
     try:
         User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
-    exception:
+    except:
         print "Error User_Msg"
         
     try:
         AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
         data = User_Msg[1:(len(User_Msg) - 1)]
-    exception:
+    except:
         print "data"
     
     try:
         items = data.split(";")
         mac = items[0]
         mac = mac[1:len(mac)]
-    exception:
+    except:
         print "Error MAC"
         
     try:
@@ -157,7 +157,7 @@ while(True):
         speed = items[7]
         co2 = items[8]
         battery = items[9]
-    exception:
+    except:
         print "Error en item[x]"
         
     try:
@@ -167,7 +167,7 @@ while(True):
         insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
         sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
         insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-    exception:
+    except:
         print "Error create data to insert BD"
         
     try:    
@@ -176,7 +176,7 @@ while(True):
 
         # Send to server using created UDP socket
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-    exception:
+    except:
         print "Error send Ack"
         
     try:
@@ -184,7 +184,7 @@ while(True):
         cursor = connection.cursor()
         cursor.execute(insertSQL,tuple(sqlValues))
         connection.commit()
-    exception:
+    except:
         print "Error insert data DB"
         
 
