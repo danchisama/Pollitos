@@ -101,7 +101,7 @@ while(True):
             Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
         else:
             Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
-   except:
+    except:
         print "Error Lat"
    
 
