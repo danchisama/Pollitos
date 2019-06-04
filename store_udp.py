@@ -93,7 +93,7 @@ while(True):
 
 	Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
         #print "Update Time:", Update_Time
-        TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%Y-%m-%d %H:%M:%S'))
+        TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16) - 18000)).strftime('%Y-%m-%d %H:%M:%S'))
         print "TimeOfFix:", TimeOfFix
 
 	#Offset_time = TimeOfFix - datetime.timedelta(hours=5)
