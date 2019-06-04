@@ -7467,4 +7467,29 @@ TimeOfFix: 2019-05-21 17:02:27
 User Msg: 
 >00:13:A2:00:41:8D:92:3D;67.80;0.00;22.20;0.00;0.18;17.30;0.00;0.00;0.00<
 MAC:  00:13:A2:00:41:8D:92:3D
-T
+T/usr/local/lib/python2.7/dist-packages/pymysql/cursors.py:170: Warning: (1366, u"Incorrect double value: 'nan' for column 'humidity2' at row 1")
+  result = self._query(query)
+/usr/local/lib/python2.7/dist-packages/pymysql/cursors.py:170: Warning: (1366, u"Incorrect double value: 'nan' for column 'ammonia2' at row 1")
+  result = self._query(query)
+/usr/local/lib/python2.7/dist-packages/pymysql/cursors.py:170: Warning: (1366, u"Incorrect double value: 'nan' for column 'temperature2' at row 1")
+  result = self._query(query)
+/usr/local/lib/python2.7/dist-packages/pymysql/cursors.py:170: Warning: (1366, u"Incorrect string value: '\\xFF>00:1...' for column 'mac' at row 1")
+  result = self._query(query)
+UDP server up and listening
+Message:  830546311962060101010400025cf202565cf2023df8c84259d21b574a000054bf00000002000008000011ffa90f0a8f000000004c0a3e30303a31333a41323a30303a34313a30363a46343a36333b38372e38303b38392e32303b31392e39303b32302e36303b332e35343b322e38373b302e30303b302e30303b302e30303c0d
+TimeOfFix: 2019-06-01 04:42:37
+Message:  830546311962060101010400025cf202565cf2023df8c84259d21b574a000054bf00000002000008000011ffa90f0a8f000000004c0a3e30303a31333a41323a30303a34313a30363a46343a36333b38372e38303b38392e32303b31392e39303b32302e36303b332e35343b322e38373b302e30303b302e30303b302e30303c0d
+TimeOfFix: 2019-06-01 04:42:37
+Message:  830546311962060101010400035cf202f95cf202faf8c8434ed21b5a0300004fd60000000800b808000011ffa70f098f000000004c0a3e30303a31333a41323a30303a34313a30363a46343a36333b38372e36303b38392e31303b31392e39303b32302e37303b332e35383b322e37393b302e30303b302e30303b302e30303c0d
+TimeOfFix: 2019-06-01 04:45:46
+Message:  830546311962060101010400035cf202f95cf202faf8c8434ed21b5a0300004fd60000000800b808000011ffa70f098f000000004c0a3e30303a31333a41323a30303a34313a30363a46343a36333b38372e36303b38392e31303b31392e39303b32302e37303b332e35383b322e37393b302e30303b302e30303b302e30303c0d
+TimeOfFix: 2019-06-01 04:45:46
+Traceback (most recent call last):
+  File "store_udp.py", line 56, in <module>
+    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+KeyboardInterrupt
+UDP server up and listening
+Traceback (most recent call last):
+  File "store_udp.py", line 64, in <module>
+    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+KeyboardInterrupt

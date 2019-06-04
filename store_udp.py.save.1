@@ -10,8 +10,6 @@ from flask import Flask
 from flask import request
 from flaskext.mysql import MySQL
 import socket
-#from datetime import datetime
-import pytz
 
 # Constant LMU ACK
 Service_Type = '02'
@@ -41,12 +39,6 @@ log_file = log_directory + "/store_app.log"
 def bit_not(n):
     return (1 << n.bit_length()) - 1 - n
 
-
-def convertToUTC(dtToConvert):
-	miFechaTimestamps=float(TimeOfFix.datetime("%s"))
-	utc_offset = datetime.fromtimestamp(miFechaTimestamps) - datetime.utcfromtimestamp(miFechaTimestamps)
-	return dtToConvert + utc_offset
-
 @app.route('/status')
 def start():
     return 'Server is running...'
@@ -61,7 +53,8 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Listen for incoming datagrams
 while(True):
-	bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
 
         message1 = bytesAddressPair[0]
         #print "Message1: ", message1
@@ -69,17 +62,18 @@ while(True):
         addr_port = bytesAddressPair[1]
         address = addr_port[0]
         port_addr = addr_port[1]
-	print "address: ", address
-	print "port_addr: ", port_addr
 
         message = binascii.hexlify(message1)
-        print "Message: ", message
+        #print "Message: ", message
 
         clientMsg = "Message from Client:{}".format(message)
         clientIP  = "Client IP Address:{}".format(address)
         clientPort = "Client Port Address:{}".format(port_addr)
-
-	OptionsByte = message[0:2]
+    except:
+        print "Error en byteAddressPair"
+    
+    try:  
+        OptionsByte = message[0:2]
         MobileIDLength = message[2:4]
         MobileID = message[4:14]
         MobileIDLen = message[14:16]
@@ -90,27 +84,36 @@ while(True):
         #print "Message Type:", Message_Type
         Sequence = message[22:26]
         #print "Sequence#:", Sequence
-
-	Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
-        #print "Update Time:", Update_Time
+    except:
+        print "Error en message[xx:xx]"
+       
+    try:
+        Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
+        print "Update Time:", Update_Time
         TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16))).strftime('%Y-%m-%d %H:%M:%S'))
         print "TimeOfFix:", TimeOfFix
-
-	#Offset_time = TimeOfFix - datetime.timedelta(hours=5)
-	#print "Offset time: ", Offset_time
-
+    except:
+        print "Error tiempo"
+    
+    try:
         Lat = message[42:50]
         if  int(Lat[0:1],16) > 7:
             Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
         else:
             Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
+    except:
+        print "Error Lat"
+   
 
+    try:
         Long = message[50:58]
         if  int(Long[0:1],16) > 7:
             Longitude = round((-0.0000001*(bit_not(int(Long,16))+1)),7)
         else:
             Longitude = round((0.0000001*(bit_not(int(Long,16)))),7)
-
+    except:
+        print "Error Long"
+        
         #Altitude = message[58:66]
         #Speed = message[66:74]
         #Heading = message[74:78]
@@ -125,17 +128,26 @@ while(True):
         #User_Msg_Route = message[98:100]
         #User_Msg_Id = message[100:102]
         #User_Msg_Length = message[102:106]
-
+    
+   # try:
         User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
-
+   # except:
+   #     print "Error User_Msg"
+        
+   # try:
         AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
         data = User_Msg[1:(len(User_Msg) - 1)]
-	#print "AckMessage: ", AckMessage
-
+   # except:
+   #     print "data"
+    
+   # try:
         items = data.split(";")
         mac = items[0]
         mac = mac[1:len(mac)]
-
+   # except:
+   #     print "Error MAC"
+        
+   # try:
         humidity = items[1]
         humidity2 = items[2]
         temperature = items[3]
@@ -145,34 +157,36 @@ while(True):
         speed = items[7]
         co2 = items[8]
         battery = items[9]
-
+    #except:
+    #    print "Error en item[x]"
+        
+   # try:
         # creating sql insert sentence
         insertSQL = "insert into data"
         insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
         insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
         sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
         insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-	print "sqlValues: ", sqlValues
-
-
-	msgFromClient = AckMessage
-	print "AckMessage: ", AckMessage
-
-	bytesToSend = binascii.unhexlify(msgFromClient)
-	print "bytesToSend: ", bytesToSend
- 
+   # except:
+   #     print "Error create data to insert BD"
+        
+   # try:    
+        bytesToSend = binascii.unhexlify(AckMessage)
         serverAddressPort = (address, port_addr)
-	print "serverAddressPort: ", serverAddressPort
 
         # Send to server using created UDP socket
-        size = UDPServerSocket.sendto(bytesToSend, serverAddressPort)
-	print "UDPClienteSocket: ", size
-
-        connection = mysql.connect()
-        cursor = connection.cursor()
-        cursor.execute(insertSQL,tuple(sqlValues))
-        connection.commit()
-	print "Fin"
+        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+   # except:
+   #     print "Error send Ack"
+        
+   
+    connection = mysql.connect()
+    cursor = connection.cursor()
+    cursor.execute(insertSQL,tuple(sqlValues))
+    connection.commit()
+   
+   
+        
 
 def setupLogger():
     if not os.path.exists(log_directory):
