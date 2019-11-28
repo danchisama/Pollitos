@@ -69,110 +69,153 @@ while(True):
         addr_port = bytesAddressPair[1]
         address = addr_port[0]
         port_addr = addr_port[1]
-	print "address: ", address
-	print "port_addr: ", port_addr
+	#print "address: ", address
+	#print "port_addr: ", port_addr
 
         message = binascii.hexlify(message1)
         print "Message: ", message
 
-        clientMsg = "Message from Client:{}".format(message)
-        clientIP  = "Client IP Address:{}".format(address)
-        clientPort = "Client Port Address:{}".format(port_addr)
+	if len(message) > 10:
+	        clientMsg = "Message from Client:{}".format(message)
+	        clientIP  = "Client IP Address:{}".format(address)
+	        clientPort = "Client Port Address:{}".format(port_addr)
 
-	OptionsByte = message[0:2]
-        MobileIDLength = message[2:4]
-        MobileID = message[4:14]
-        MobileIDLen = message[14:16]
-        MobileIDType = message[16:18]
-        #Service_Type = message[18:20]
-        #print "Service Type:", Service_Type
-        #Message_Type = message[20:22]
-        #print "Message Type:", Message_Type
-        Sequence = message[22:26]
-        #print "Sequence#:", Sequence
+		OptionsByte = message[0:2]
+	        MobileIDLength = message[2:4]
+	        MobileID = message[4:14]
+	        MobileIDLen = message[14:16]
+	        MobileIDType = message[16:18]
+	        #Service_Type = message[18:20]
+	        #print "Service Type:", Service_Type
+	        #Message_Type = message[20:22]
+        	#print "Message Type:", Message_Type
+	        Sequence = message[22:26]
+	        #print "Sequence#:", Sequence
 
-	Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
-        #print "Update Time:", Update_Time
-        TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16) - 18000)).strftime('%Y-%m-%d %H:%M:%S'))
-        print "TimeOfFix:", TimeOfFix
+		Update_Time = (datetime.datetime.fromtimestamp(int(int(message[26:34], 16))).strftime('%d-%m-%Y %H:%M:%S'))
+	        #print "Update Time:", Update_Time
+	        TimeOfFix = (datetime.datetime.fromtimestamp(int(int(message[34:42], 16) - 18000)).strftime('%Y-%m-%d %H:%M:%S'))
+	        print "TimeOfFix:", TimeOfFix
 
-	#Offset_time = TimeOfFix - datetime.timedelta(hours=5)
-	#print "Offset time: ", Offset_time
+		#Offset_time = TimeOfFix - datetime.timedelta(hours=5)
+		#print "Offset time: ", Offset_time
 
-        Lat = message[42:50]
-        if  int(Lat[0:1],16) > 7:
-            Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
-        else:
-            Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
+        	Lat = message[42:50]
+	        if  int(Lat[0:1],16) > 7:
+        	    Latitude = round((-0.0000001*(bit_not(int(Lat,16))+1)),7)
+	        else:
+        	    Latitude = round((0.0000001*(bit_not(int(Lat,16)))),7)
 
-        Long = message[50:58]
-        if  int(Long[0:1],16) > 7:
-            Longitude = round((-0.0000001*(bit_not(int(Long,16))+1)),7)
-        else:
-            Longitude = round((0.0000001*(bit_not(int(Long,16)))),7)
+	        Long = message[50:58]
+	        if  int(Long[0:1],16) > 7:
+        	    Longitude = round((-0.0000001*(bit_not(int(Long,16))+1)),7)
+	        else:
+	            Longitude = round((0.0000001*(bit_not(int(Long,16)))),7)
 
-        #Altitude = message[58:66]
-        #Speed = message[66:74]
-        #Heading = message[74:78]
-        #Satellites = message[78:80]
-        #FixStatus = message[80:82]
-        #Carrier = message[82:86]
-        #RSSI = message[86:90]
-        #CommState = message[90:92]
-        #HDOP = message[92:94]
-        #Inputs = message[94:96]
-        #UnitStatus = message[96:98]
-        #User_Msg_Route = message[98:100]
-        #User_Msg_Id = message[100:102]
-        #User_Msg_Length = message[102:106]
+        	#Altitude = message[58:66]
+	        #Speed = message[66:74]
+	        #Heading = message[74:78]
+	        #Satellites = message[78:80]
+	        #FixStatus = message[80:82]
+	        #Carrier = message[82:86]
+	        #RSSI = message[86:90]
+	        #CommState = message[90:92]
+        	#HDOP = message[92:94]
+	        #Inputs = message[94:96]
+	        #UnitStatus = message[96:98]
+        	#User_Msg_Route = message[98:100]
+	        #User_Msg_Id = message[100:102]
+	        #User_Msg_Length = message[102:106]
+	
+		try:
+	        	User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
 
-        User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
+	        	AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
+		        data = User_Msg[1:(len(User_Msg) - 1)]
+			#print "AckMessage: ", AckMessage
 
-        AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
-        data = User_Msg[1:(len(User_Msg) - 1)]
-	#print "AckMessage: ", AckMessage
+		        items = data.split(";")
+		        mac = items[0]
+		        mac = mac[1:len(mac)]
+			if len(mac) < 23:
+				mac = 'EE:EE:EE:EE:EE:EE:EE:EE'
 
-        items = data.split(";")
-        mac = items[0]
-        mac = mac[1:len(mac)]
+		        humidity = items[1]
+	        except IndexError:
+			print "Error humidity"
+			humidity = 0
+		try:
+			humidity2 = items[2]
+	        except IndexError:
+			print "Error humidity2"
+			humidity2 = 0
+		try:
+			temperature = items[3]
+		except IndexError:
+			print "Error temperatura"
+			temperature = 0
+		try:
+		        temperature2 = items[4]
+		except IndexError:
+			print "Error temperature"
+			temperature2 = 0
+		try:
+		        ammonia = items[5]
+		except IndexError:
+			print "Errpr ammonia"
+			ammonia = 0
+		try:
+		        ammonia2 = items[6]
+		except IndexError:
+			print "Error ammonia2"
+			ammonia2 = 0
+		try:
+		        speed = items[7]
+		except IndexError:
+			print "Error speed"
+			speed = 0
+		try:
+		        co2 = items[8]
+		except IndexError:
+			print "Error co2"
+			co2 = 0
+		try:
+		        battery = items[9]
+		except IndexError:
+			print "Error battery"
+			battery = 0
 
-        humidity = items[1]
-        humidity2 = items[2]
-        temperature = items[3]
-        temperature2 = items[4]
-        ammonia = items[5]
-        ammonia2 = items[6]
-        speed = items[7]
-        co2 = items[8]
-        battery = items[9]
-
-        # creating sql insert sentence
-        insertSQL = "insert into data"
-        insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
-        insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
-        sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
-        insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-	print "sqlValues: ", sqlValues
+	        # creating sql insert sentence
+	        insertSQL = "insert into data"
+	        insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
+        	insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+	        sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
+        	insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
+		#print "sqlValues: ", sqlValues
 
 
-	msgFromClient = AckMessage
-	print "AckMessage: ", AckMessage
+		msgFromClient = AckMessage
+		#print "AckMessage: ", AckMessage
 
-	bytesToSend = binascii.unhexlify(msgFromClient)
-	print "bytesToSend: ", bytesToSend
+		bytesToSend = binascii.unhexlify(msgFromClient)
+		#print "bytesToSend: ", bytesToSend
  
-        serverAddressPort = (address, port_addr)
-	print "serverAddressPort: ", serverAddressPort
+	        serverAddressPort = (address, port_addr)
+		#print "serverAddressPort: ", serverAddressPort
 
-        # Send to server using created UDP socket
-        size = UDPServerSocket.sendto(bytesToSend, serverAddressPort)
-	print "UDPClienteSocket: ", size
+	        # Send to server using created UDP socket
+        	size = UDPServerSocket.sendto(bytesToSend, serverAddressPort)
+		#print "UDPClienteSocket: ", size
 
-        connection = mysql.connect()
-        cursor = connection.cursor()
-        cursor.execute(insertSQL,tuple(sqlValues))
-        connection.commit()
-	print "Fin"
+	        connection = mysql.connect()
+        	cursor = connection.cursor()
+	        cursor.execute(insertSQL,tuple(sqlValues))
+	        connection.commit()
+		print "Fin"
+
+	else:
+		print "Error message menor a 10 caracteres"
+
 
 def setupLogger():
     if not os.path.exists(log_directory):
