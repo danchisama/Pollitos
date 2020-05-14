@@ -55,12 +55,17 @@ def start():
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 # Bind to address and ip
 UDPServerSocket.bind(("23.239.5.206",5000))
-print("UDP server up and listening")
+print " ******************************** "
+print "UDP server up and listening !!!"
+#print "punto break"
 
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+#print "bufferSize: ", bufferSize
+#print "UDPClientSocket: ", UDPClientSocket
 
 # Listen for incoming datagrams
 while(True):
+	#print "Dentro del while"
 	bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
 
         message1 = bytesAddressPair[0]
@@ -74,7 +79,7 @@ while(True):
 
         message = binascii.hexlify(message1)
         print "Message: ", message
-
+	#print "Len Message: ",len(message)
 	if len(message) > 10:
 	        clientMsg = "Message from Client:{}".format(message)
 	        clientIP  = "Client IP Address:{}".format(address)
@@ -126,96 +131,115 @@ while(True):
         	#User_Msg_Route = message[98:100]
 	        #User_Msg_Id = message[100:102]
 	        #User_Msg_Length = message[102:106]
-	
-		try:
-	        	User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
+		User_Msg_xbee = message[106:len(message)]
+		print "User_Msg_bee: ", User_Msg_xbee
 
-	        	AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
-		        data = User_Msg[1:(len(User_Msg) - 1)]
-			#print "AckMessage: ", AckMessage
+		try:
+	        	#User_Msg = binascii.unhexlify(message[106:((2*(int(message[102:106],16)))+106-2)])
+			User_Msg = binascii.unhexlify(User_Msg_xbee[User_Msg_xbee.find("3e"):len(User_Msg_xbee)])
+			print "User_Msg: ", User_Msg
+
+		except TypeError:
+			print "Error User_Msg"
+			User_Msg = 'EE'
+			print "User_Msg: ", User_Msg
+			print "len(User_Msg) :", len(User_Msg)
+
+	        AckMessage = OptionsByte + MobileIDLength + MobileID + MobileIDLen + MobileIDType + Service_Type + Message_Type + Sequence + Type_ + ACK_ + Spare_ + AppVersion_
+
+		#User_Msg discrimina data real
+		if len(User_Msg) > 2:
+
+			#inic = User_Msg.find(">")
+			#inic = 1
+			data = User_Msg[1:(len(User_Msg) - 1)]
+			print "data: ", data
 
 		        items = data.split(";")
 		        mac = items[0]
-		        mac = mac[1:len(mac)]
+		        mac = mac[0:len(mac)]
+			print "mac ", mac
 			if len(mac) < 23:
 				mac = 'EE:EE:EE:EE:EE:EE:EE:EE'
 
-		        humidity = items[1]
-	        except IndexError:
-			print "Error humidity"
-			humidity = 0
-		try:
-			humidity2 = items[2]
-	        except IndexError:
-			print "Error humidity2"
-			humidity2 = 0
-		try:
-			temperature = items[3]
-		except IndexError:
-			print "Error temperatura"
-			temperature = 0
-		try:
-		        temperature2 = items[4]
-		except IndexError:
-			print "Error temperature"
-			temperature2 = 0
-		try:
-		        ammonia = items[5]
-		except IndexError:
-			print "Errpr ammonia"
-			ammonia = 0
-		try:
-		        ammonia2 = items[6]
-		except IndexError:
-			print "Error ammonia2"
-			ammonia2 = 0
-		try:
-		        speed = items[7]
-		except IndexError:
-			print "Error speed"
-			speed = 0
-		try:
-		        co2 = items[8]
-		except IndexError:
-			print "Error co2"
-			co2 = 0
-		try:
-		        battery = items[9]
-		except IndexError:
-			print "Error battery"
-			battery = 0
+			try:
+			        humidity = items[1]
+		        except IndexError:
+				print "Error humidity"
+				humidity = 0
+			try:
+				humidity2 = items[2]
+		        except IndexError:
+				print "Error humidity2"
+				humidity2 = 0
+			try:
+				temperature = items[3]
+			except IndexError:
+				print "Error temperatura"
+				temperature = 0
+			try:
+			        temperature2 = items[4]
+			except IndexError:
+				print "Error temperature"
+				temperature2 = 0
+			try:
+			        ammonia = items[5]
+			except IndexError:
+				print "Error ammonia"
+				ammonia = 0
+			try:
+			        ammonia2 = items[6]
+			except IndexError:
+				print "Error ammonia2"
+				ammonia2 = 0
+			try:
+			        speed = items[7]
+			except IndexError:
+				print "Error speed"
+				speed = 0
+			try:
+			        co2 = items[8]
+			except IndexError:
+				print "Error co2"
+				co2 = 0
+			try:
+			        battery = items[9]
+			except IndexError:
+				print "Error battery"
+				battery = 0
 
-	        # creating sql insert sentence
-	        insertSQL = "insert into data"
-	        insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
-        	insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
-	        sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
-        	insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
-		#print "sqlValues: ", sqlValues
+		        # creating sql insert sentence
+		        insertSQL = "insert into data"
+		        insertFields = "created, latitude, longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery"
+       			insertValuePH = "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+		        sqlValues = [TimeOfFix, Latitude, Longitude, mac, humidity, humidity2, temperature, temperature2, ammonia, ammonia2, speed, co2, battery]
+       			insertSQL = insertSQL + "(" + insertFields + ") values (" + insertValuePH + ")"
+			#print "sqlValues: ", sqlValues
 
+			connection = mysql.connect()
+			cursor = connection.cursor()
+			cursor.execute(insertSQL,tuple(sqlValues))
+			connection.commit()
+			print "Message insert to MySQL"
 
 		msgFromClient = AckMessage
 		#print "AckMessage: ", AckMessage
 
 		bytesToSend = binascii.unhexlify(msgFromClient)
 		#print "bytesToSend: ", bytesToSend
- 
+
 	        serverAddressPort = (address, port_addr)
 		#print "serverAddressPort: ", serverAddressPort
 
 	        # Send to server using created UDP socket
-        	size = UDPServerSocket.sendto(bytesToSend, serverAddressPort)
+       		size = UDPServerSocket.sendto(bytesToSend, serverAddressPort)
 		#print "UDPClienteSocket: ", size
 
-	        connection = mysql.connect()
-        	cursor = connection.cursor()
-	        cursor.execute(insertSQL,tuple(sqlValues))
-	        connection.commit()
-		print "Fin"
 
 	else:
 		print "Error message menor a 10 caracteres"
 
+	print "Fin"
 
 def setupLogger():
     if not os.path.exists(log_directory):
